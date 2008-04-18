@@ -24,32 +24,31 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
   end
   
   
-  # api_key and api_secret may be overridden in your controller
+  # api_key, api_secret and canvas_path may be overridden in your controller
   
   def api_key
-    network_keys[:api_key]
+    network_options[:api_key]
   end
   
   def api_secret
-    network_keys[:api_secret]
+    network_options[:api_secret]
   end
   
-  def network_keys
-    ApplicationController::API_KEYS[current_network.to_s]
+  def canvas_path
+    network_options[:canvas_path]
   end
   
-  def redirect_to_with_canvas_support(*args)
-    if in_canvas?
-      render :text => "<fb:redirect url=\"#{url_for(*args)}\" />"
-    else
-      redirect_to_without_canvas_support(*args)
-    end
-  end
+  
+  # Before filters
   
   def ensure_application_installed
     unless application_added?
       redirect_to current_network.install_url(api_key)
     end
+  end
+  
+  def set_request_format
+    request.format = :fbml if in_canvas?
   end
   
   module ClassMethods
@@ -59,14 +58,33 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
     end
   end
   
-  def self.included(base)
-    base.extend(ClassMethods)
-    base.send(:alias_method_chain, :redirect_to, :canvas_support)
-    base.send(:before_filter, :set_request_format)
+  
+  # Method extensions
+  
+  def redirect_to_with_canvas_support(*args)
+    if in_canvas?
+      render :text => "<fb:redirect url=\"#{url_for(*args)}\" />"
+    else
+      redirect_to_without_canvas_support(*args)
+    end
   end
   
-  def set_request_format
-    request.format = :fbml if in_canvas?
+  def url_for_with_canvas_support(*args)
+    returning url_for_without_canvas_support(*args) do |url|
+      url.gsub!(/^\//, canvas_path) if in_canvas?
+    end
+  end
+  
+  
+  def self.included(base)
+    base.class_eval do
+      extend ClassMethods
+    
+      alias_method_chain :redirect_to, :canvas_support
+      alias_method_chain :url_for, :canvas_support
+    
+      before_filter :set_request_format
+    end
   end
   
 private
@@ -76,5 +94,9 @@ private
       @platform_session.activate(params['fb_sig_session_key'], params['fb_sig_user'])
       @platform_session
     end
+  end
+  
+  def network_options
+    ApplicationController::NETWORK_OPTIONS[current_network.to_s]
   end
 end
