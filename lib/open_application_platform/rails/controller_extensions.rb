@@ -56,6 +56,11 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
       options = actions.extract_options!
       before_filter :ensure_application_installed, options
     end
+    
+    def skip_platform_install(*actions)
+      options = actions.extract_options!
+      skip_before_filter :ensure_application_installed, options
+    end
   end
   
   
@@ -79,24 +84,26 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
   def self.included(base)
     base.class_eval do
       extend ClassMethods
-    
+      
       alias_method_chain :redirect_to, :canvas_support
       alias_method_chain :url_for, :canvas_support
-    
+      
       before_filter :set_request_format
+      
+      helper_method :in_canvas?
     end
   end
   
 private
   def initialize_platform_session
     if application_added?
-      @platform_session = OpenApplicationPlatform::Session.new(api_key, api_secret, current_network)
-      @platform_session.activate(params['fb_sig_session_key'], params['fb_sig_user'])
-      @platform_session
+      session = OpenApplicationPlatform::Session.new(api_key, api_secret, current_network)
+      session.activate(params['fb_sig_session_key'], params['fb_sig_user'])
+      session
     end
   end
   
   def network_options
-    ApplicationController::NETWORK_OPTIONS[current_network.to_s]
+    OPEN_APPLICATION_PLATFORM[current_network.to_s]
   end
 end
