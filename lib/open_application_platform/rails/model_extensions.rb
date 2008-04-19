@@ -1,19 +1,19 @@
 module OpenApplicationPlatform::Rails::ModelExtensions
-  CACHEABLE_FIELDS = [ 'about_me', 'activities', 'affiliations', 'birthday', 'books',
-                       'current_location', 'education_history', 'name', 'first_name',
-                       'last_name', 'hometown_location', 'hs_info', 'interests',
-                       'relationship_status', 'meeting_for', 'meeting_sex', 'movies',
-                       'music', 'notes_count', 'political', 'profile_update_time',
-                       'quotes', 'religion', 'sex', 'significant_other_id', 'status',
-                       'timezone', 'tv', 'wall_count', 'work_history', 'pic',
-                       'pic_big', 'pic_small', 'pic_square' ]
+  FIELDS = [ 'about_me', 'activities', 'affiliations', 'birthday', 'books',
+             'current_location', 'education_history', 'name', 'first_name',
+             'last_name', 'hometown_location', 'hs_info', 'interests',
+             'relationship_status', 'meeting_for', 'meeting_sex', 'movies',
+             'music', 'notes_count', 'political', 'profile_update_time',
+             'quotes', 'religion', 'sex', 'significant_other_id', 'status',
+             'timezone', 'tv', 'wall_count', 'work_history', 'pic',
+             'pic_big', 'pic_small', 'pic_square' ]
   
   module ActsAsPlatformUser
     module InstanceMethods
       def platform_session
         @platform_session ||= initialize_platform_session
       end
-    
+      
     private
       # api_key and api_secret may be overridden in model
       
@@ -38,6 +38,17 @@ module OpenApplicationPlatform::Rails::ModelExtensions
         session.activate(session_key, platform_uid)
         session
       end
+      
+      def get_user_info(fields)
+        unless @user_info && fields.all? { |k| @user_info.keys.include?(k) }
+          @user_info = platform_session.api.users_getInfo(:uids => [platform_uid],
+                                                          :fields => Array(fields)).first
+        end
+      end
+      
+      def cache_valid?
+        false
+      end
     end
     
     module ClassMethods
@@ -61,23 +72,40 @@ module OpenApplicationPlatform::Rails::ModelExtensions
           user
         end
       end
-    
+      
+      def field_cached?(field)
+        @@cached_fields.include?(field)
+      end
+      
     private
       def cache_platform_fields(fields)
-        raise "Table is missing field cache_updated_at" unless has_column?("cached_updated_at")
+        raise "Table is missing field cache_updated_at" unless has_column?("cache_updated_at")
         
         fields.each do |field|
           raise "Field #{field} is not cacheable." unless cacheable?(field)
           raise "Table is missing field cached_#{field}" unless has_column?("cached_#{field}")
         end
+        
+        @@cached_fields = fields
       end
       
       def cacheable?(field)
-        CACHEABLE_FIELDS.include?(field)
+        FIELDS.include?(field)
       end
       
       def has_column?(field)
         content_columns.map(&:name).include?(field)
+      end
+      
+      def define_user_api_method(field)
+        class_eval <<-EOF
+          def #{field}(warn_if_not_cached=true)
+            logger.warn("Accessing uncached field #{field}") if warn_if_not_cached && !self.class.field_cached?('#{field}')
+            
+            get_user_info('#{field}')
+            @user_info['#{field}']
+          end
+        EOF
       end
     end
   end
@@ -93,6 +121,8 @@ module OpenApplicationPlatform::Rails::ModelExtensions
     def acts_as_platform_user(options={})
       include ActsAsPlatformUser::InstanceMethods
       extend ActsAsPlatformUser::ClassMethods
+      
+      FIELDS.each { |f| define_user_api_method(f) }
       
       cache_platform_fields(options[:cache_fields]) if options[:cache_fields]
     end

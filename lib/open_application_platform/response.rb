@@ -8,6 +8,14 @@ class OpenApplicationPlatform::API::Response
     parse(body)
   end
   
+  def method_missing(method)
+    if @value.respond_to?(method)
+      @value.send(method)
+    else
+      super
+    end
+  end
+  
 private
   def parse(body)
     @value = JSON.parse(body)
