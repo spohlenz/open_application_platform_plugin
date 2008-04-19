@@ -41,8 +41,10 @@ module OpenApplicationPlatform::Rails::ModelExtensions
       
       def get_user_info(fields)
         unless @user_info && fields.all? { |k| @user_info.keys.include?(k) }
+          fields = (Array(fields) + (@user_info || {}).keys).uniq
+          
           @user_info = platform_session.api.users_getInfo(:uids => [platform_uid],
-                                                          :fields => Array(fields)).first
+                                                          :fields => fields).first
         end
       end
       
