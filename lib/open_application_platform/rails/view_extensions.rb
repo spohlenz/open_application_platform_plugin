@@ -5,7 +5,7 @@ module OpenApplicationPlatform::Rails::ViewExtensions
   
   def url_for_with_canvas_support(*args)
     returning url_for_without_canvas_support(*args) do |url|
-      url.gsub!(/^\//, controller.canvas_path) if in_canvas?
+      url.gsub!(/^\//, controller.canvas_path) if in_canvas? && url !~ /^#{controller.canvas_path}/
     end
   end
   

@@ -74,7 +74,7 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
   
   def url_for_with_canvas_support(*args)
     returning url_for_without_canvas_support(*args) do |url|
-      url.gsub!(/^\//, canvas_path) if in_canvas?
+      url.gsub!(/^\//, canvas_path) if in_canvas? && url !~ /^#{canvas_path}/
     end
   end
   
