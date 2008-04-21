@@ -52,11 +52,11 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
   end
   
   module ClassMethods
-    def require_platform_install(options)
+    def require_platform_install(options={})
       before_filter :ensure_application_installed, options
     end
     
-    def skip_platform_install(options)
+    def skip_platform_install(options={})
       skip_before_filter :ensure_application_installed, options
     end
   end
