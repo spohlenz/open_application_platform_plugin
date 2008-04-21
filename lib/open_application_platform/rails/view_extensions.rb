@@ -9,10 +9,6 @@ module OpenApplicationPlatform::Rails::ViewExtensions
     end
   end
   
-  def canvas_path
-    controller.send(:canvas_path)
-  end
-  
   def self.included(base)
     base.class_eval do
       alias_method_chain :link_to, :canvas_support
