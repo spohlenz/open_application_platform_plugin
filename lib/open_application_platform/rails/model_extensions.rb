@@ -49,7 +49,7 @@ module OpenApplicationPlatform::Rails::ModelExtensions
       end
       
       def cache_valid?
-        false
+        cache_updated_at && cache_updated_at > 24.hours.ago
       end
     end
     
@@ -86,6 +86,20 @@ module OpenApplicationPlatform::Rails::ModelExtensions
         fields.each do |field|
           raise "Field #{field} is not cacheable." unless cacheable?(field)
           raise "Table is missing field cached_#{field}" unless has_column?("cached_#{field}")
+          
+          class_eval <<-EOF
+            alias_method :uncached_#{field}, :#{field}
+            
+            def #{field}
+              unless cache_valid?
+                self.cached_#{field} = uncached_#{field}
+                self.cache_updated_at = Time.now
+                save(false)
+              end
+              
+              cached_#{field}
+            end
+          EOF
         end
         
         @@cached_fields = fields
@@ -99,15 +113,17 @@ module OpenApplicationPlatform::Rails::ModelExtensions
         content_columns.map(&:name).include?(field)
       end
       
-      def define_user_api_method(field)
-        class_eval <<-EOF
-          def #{field}(warn_if_not_cached=true)
-            logger.warn("Accessing uncached field #{field}") if warn_if_not_cached && !self.class.field_cached?('#{field}')
+      def define_user_api_methods(fields)
+        fields.each do |field|
+          class_eval <<-EOF
+            def #{field}
+              logger.warn("Accessing uncached field #{field}") unless self.class.field_cached?('#{field}')
             
-            get_user_info('#{field}')
-            @user_info['#{field}']
-          end
-        EOF
+              get_user_info('#{field}')
+              @user_info['#{field}']
+            end
+          EOF
+        end
       end
     end
   end
@@ -124,8 +140,7 @@ module OpenApplicationPlatform::Rails::ModelExtensions
       include ActsAsPlatformUser::InstanceMethods
       extend ActsAsPlatformUser::ClassMethods
       
-      FIELDS.each { |f| define_user_api_method(f) }
-      
+      define_user_api_methods(FIELDS)
       cache_platform_fields(options[:cache_fields]) if options[:cache_fields]
     end
   end
