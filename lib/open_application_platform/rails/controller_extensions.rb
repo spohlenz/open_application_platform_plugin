@@ -38,8 +38,8 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
     network_options[:api_secret]
   end
   
-  def canvas_path
-    network_options[:canvas_path]
+  def app_name
+    network_options[:app_name]
   end
   
   
@@ -78,7 +78,7 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
   
   def url_for_with_canvas_support(*args)
     returning url_for_without_canvas_support(*args) do |url|
-      url.gsub!(/^\//, canvas_path) if in_canvas? && url !~ /^#{canvas_path}/
+      url.gsub!(/^\//, "/#{app_name}/") if in_canvas? && url !~ /\/#{app_name}/
     end
   end
   
@@ -92,7 +92,7 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
       
       before_filter :set_request_format
       
-      helper_method :in_canvas?, :application_added?, :canvas_path
+      helper_method :in_canvas?, :application_added?, :app_name
     end
   end
   
