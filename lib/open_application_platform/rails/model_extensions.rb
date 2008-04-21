@@ -117,7 +117,9 @@ module OpenApplicationPlatform::Rails::ModelExtensions
         fields.each do |field|
           class_eval <<-EOF
             def #{field}
-              logger.warn("Accessing uncached field #{field}") unless self.class.field_cached?('#{field}')
+              unless self.class.field_cached?('#{field}')
+                logger.warn("Accessing uncached field #{field}")
+              end
             
               get_user_info('#{field}')
               @user_info['#{field}']
