@@ -15,6 +15,10 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
     params['fb_sig_in_canvas'] == '1'
   end
   
+  def is_ajax?
+    params['fb_sig_is_ajax'] == '1'
+  end
+  
   def current_network_param
     params['fb_sig_network'] || 'Facebook'
   end
@@ -48,7 +52,7 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
   end
   
   def set_request_format
-    request.format = :fbml if in_canvas?
+    request.format = :fbml if in_canvas? || in_ajax?
   end
   
   module ClassMethods
