@@ -52,7 +52,7 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
   end
   
   def set_request_format
-    request.format = :fbml if in_canvas? || in_ajax?
+    request.format = :fbml if in_canvas? || is_ajax?
   end
   
   module ClassMethods
