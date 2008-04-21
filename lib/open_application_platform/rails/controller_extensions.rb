@@ -28,7 +28,7 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
   end
   
   
-  # api_key, api_secret and canvas_path may be overridden in your controller
+  # api_key, api_secret and app_name may be overridden in your controller
   
   def api_key
     network_options[:api_key]
