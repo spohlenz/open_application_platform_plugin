@@ -88,7 +88,7 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
       
       before_filter :set_request_format
       
-      helper_method :in_canvas?, :canvas_path
+      helper_method :in_canvas?
     end
   end
   
