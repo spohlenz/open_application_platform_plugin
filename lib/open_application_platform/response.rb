@@ -12,7 +12,8 @@ class OpenApplicationPlatform::API::Response
     102 => 'InvalidSessionKey',
     103 => 'InvalidCallID',
     104 => 'InvalidSignature',
-    330 => 'InvalidMarkup'
+    110 => 'InvalidUserID',
+    330 => 'InvalidMarkup',
   }
   
   ERROR_TYPES.each do |code, error|

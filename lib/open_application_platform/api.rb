@@ -32,6 +32,7 @@ private
     result = post(params).body
     
     logger.info("#{network} API response: #{result}")
+    
     Response.new(result)
   end
   
@@ -53,7 +54,10 @@ private
   
   def post(params)
     Net::HTTP.new(network.api_host, 80).start do |http|
-      http.post(network.api_path_rest, serialize(params))
+      post = Net::HTTP::Post.new(network.api_path_rest)
+      post.form_data = params
+      
+      http.request(post)
     end
   end
   
