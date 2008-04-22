@@ -1,6 +1,26 @@
 require 'json'
 
 class OpenApplicationPlatform::API::Response
+  ERROR_TYPES = {
+    1   => 'Unknown',
+    2   => 'ServiceUnavailable',
+    3   => 'UnknownMethod',
+    4   => 'MaxRequests',
+    5   => 'DisallowedRemoteAddress',
+    100 => 'InvalidParameter',
+    101 => 'InvalidAPIKey',
+    102 => 'InvalidSessionKey',
+    103 => 'InvalidCallID',
+    104 => 'InvalidSignature',
+    330 => 'InvalidMarkup'
+  }
+  
+  ERROR_TYPES.each do |code, error|
+    class_eval <<-EOF
+      class #{error}Error < StandardError; end
+    EOF
+  end
+  
   attr_accessor :value
   
   def initialize(body)
@@ -19,7 +39,16 @@ class OpenApplicationPlatform::API::Response
 private
   def parse(body)
     @value = JSON.parse(body)
+    
+    if @value.is_a?(Hash) && @value['error_code']
+      raise error_class(@value['error_code']), body
+    end
   rescue JSON::ParserError
-    @value = body.sub(/^"(.*)"$/, '\1') # Remove leading and trailing double-quotes
+    # Not JSON - remove leading and trailing double-quotes
+    @value = body.sub(/^"(.*)"$/, '\1')
+  end
+  
+  def error_class(code)
+    "#{self.class.to_s}::#{ERROR_TYPES[code]}Error".constantize
   end
 end
