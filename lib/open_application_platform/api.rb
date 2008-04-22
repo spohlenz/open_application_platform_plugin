@@ -18,13 +18,21 @@ class OpenApplicationPlatform::API
   end
   
 private
+  def logger
+    RAILS_DEFAULT_LOGGER
+  end
+
   def call(method, params={})
-    RAILS_DEFAULT_LOGGER.info("#{network} API call: #{method}")
+    logger.info("#{network} API call: #{method}")
     
     params = params.merge(apiparams(method))
     params.each { |k, v| params[k] = v.join(',') if v.is_a?(Array) }
     params[:sig] = sign(params)
-    Response.new(post(params).body)
+    
+    result = post(params).body
+    
+    logger.info("#{network} API response: #{result}")
+    Response.new(result)
   end
   
   def apiparams(method)
