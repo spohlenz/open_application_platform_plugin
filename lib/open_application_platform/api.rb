@@ -19,6 +19,8 @@ class OpenApplicationPlatform::API
   
 private
   def call(method, params={})
+    RAILS_DEFAULT_LOGGER.log("#{network} API call: #{method}")
+    
     params = params.merge(apiparams(method))
     params.each { |k, v| params[k] = v.join(',') if v.is_a?(Array) }
     params[:sig] = sign(params)
