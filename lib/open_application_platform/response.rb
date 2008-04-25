@@ -16,9 +16,11 @@ class OpenApplicationPlatform::API::Response
     330 => 'InvalidMarkup',
   }
   
+  class APIError < StandardError; end
+  
   ERROR_TYPES.each do |code, error|
     class_eval <<-EOF
-      class #{error}Error < StandardError; end
+      class #{error}Error < APIError; end
     EOF
   end
   
