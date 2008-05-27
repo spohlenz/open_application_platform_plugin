@@ -14,6 +14,13 @@ class OpenApplicationPlatform::API::Response
     104 => 'InvalidSignature',
     110 => 'InvalidUserID',
     330 => 'InvalidMarkup',
+    341 => 'FeedLimit',
+    360 => 'InvalidTitleJSON',
+    361 => 'MissingTitleParameters',
+    362 => 'InvalidBodyJSON',
+    363 => 'MissingBodyParameters',
+    364 => 'PhotoRetrieval',
+    366 => 'InvalidTargetIDs'
   }
   
   class APIError < StandardError; end
