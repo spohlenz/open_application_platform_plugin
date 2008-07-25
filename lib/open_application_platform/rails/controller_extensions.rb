@@ -46,9 +46,11 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
   # Before filters
   
   def ensure_application_installed
-    unless application_added?
-      redirect_to current_network.install_url(api_key)
-    end
+    redirect_to current_network.install_url(api_key) unless application_added?
+  end
+  
+  def ensure_user_logged_in
+    redirect_to current_network.login_url(api_key) unless application_added?
   end
   
   def set_request_format
@@ -56,6 +58,14 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
   end
   
   module ClassMethods
+    def require_platform_login(options={})
+      before_filter :ensure_user_logged_in, options
+    end
+    
+    def skip_platform_login(options={})
+      skip_before_filter :ensure_user_logged_in, options
+    end
+    
     def require_platform_install(options={})
       before_filter :ensure_application_installed, options
     end

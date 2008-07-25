@@ -11,6 +11,10 @@ class OpenApplicationPlatform::Network
       super.demodulize
     end
     
+    def login_url(api_key)
+      "http://#{www_host}#{www_path_login}?api_key=#{api_key}"
+    end
+    
     def install_url(api_key)
       "http://#{www_host}#{www_path_install}?api_key=#{api_key}"
     end
