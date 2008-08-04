@@ -1,6 +1,6 @@
 class OpenApplicationPlatform::Network::Facebook < OpenApplicationPlatform::Network
   @api_version      = '1.0'
-  @api_host         = 'api.facebook.com'
+  @api_host         = 'api.new.facebook.com'
   @api_path_rest    = '/restserver.php'
   
   @www_host         = 'www.facebook.com'
