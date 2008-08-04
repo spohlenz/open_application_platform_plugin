@@ -116,7 +116,7 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
   
 private
   def initialize_platform_session
-    if application_added?
+    if logged_in?
       session = OpenApplicationPlatform::Session.new(api_key, api_secret, current_network)
       session.activate(params['fb_sig_session_key'], params['fb_sig_user'])
       session
