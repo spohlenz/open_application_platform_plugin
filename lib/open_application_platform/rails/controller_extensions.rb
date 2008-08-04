@@ -110,7 +110,7 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
       
       before_filter :set_request_format
       
-      helper_method :in_canvas?, :application_added?, :app_name
+      helper_method :in_canvas?, :application_added?, :app_name, :in_new_facebook?
     end
   end
   
