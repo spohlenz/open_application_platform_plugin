@@ -11,12 +11,20 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
     params['fb_sig_added'] == '1'
   end
   
+  def logged_in?
+    params['fb_sig_user']
+  end
+  
   def in_canvas?
     params['fb_sig_in_canvas'] == '1'
   end
   
   def is_ajax?
     params['fb_sig_is_ajax'] == '1'
+  end
+  
+  def in_new_facebook?
+    params['fb_sig_in_new_facebook'] == '1'
   end
   
   def current_network_param
@@ -50,7 +58,7 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
   end
   
   def ensure_user_logged_in
-    redirect_to current_network.login_url(api_key) unless application_added?
+    redirect_to current_network.login_url(api_key) unless logged_in?
   end
   
   def set_request_format
