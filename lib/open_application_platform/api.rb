@@ -1,12 +1,15 @@
 class OpenApplicationPlatform::API
   attr_accessor :network, :api_key, :api_secret, :session_key, :user_id
   
-  def initialize(network, api_key, api_secret, session_key, user_id=nil)
+  def initialize(network, api_key, api_secret, session_key=nil, user_id=nil)
     @network = network
     @api_key = api_key
     @api_secret = api_secret
-    @session_key = session_key
-    @user_id = user_id ? user_id : users_getLoggedInUser.value
+    
+    if session_key
+      @session_key = session_key
+      @user_id = user_id ? user_id : users_getLoggedInUser.value
+    end
   end
   
   def method_missing(method, *args, &block)
@@ -41,7 +44,7 @@ private
       p[:method] = method
       p[:api_key] = api_key
       p[:v] = network.api_version
-      p[:session_key] = session_key
+      p[:session_key] = session_key if session_key
       p[:call_id] = Time.now.to_f.to_s
       p[:format] = 'JSON'
     end

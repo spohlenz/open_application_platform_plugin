@@ -36,7 +36,11 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
   end
   
   
-  # api_key, api_secret and app_name may be overridden in your controller
+  # network_options, api_key, api_secret or app_name may be overridden in your controller
+  
+  def network_options
+    global_config[current_network_param.downcase][Rails.env]
+  end
   
   def api_key
     network_options[:api_key]
@@ -110,7 +114,8 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
       
       before_filter :set_request_format
       
-      helper_method :in_canvas?, :application_added?, :app_name, :in_new_facebook?
+      helper_method :app_name, :api_key
+      helper_method :platform_request?, :application_added?, :logged_in?, :in_canvas?, :in_new_facebook?
     end
   end
   
@@ -125,5 +130,9 @@ private
   
   def network_options
     OPEN_APPLICATION_PLATFORM[current_network.to_s]
+  end
+  
+  def global_config
+    @config = YAML.load(File.read(RAILS_ROOT + '/config/platform.yml'))
   end
 end
