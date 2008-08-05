@@ -36,11 +36,7 @@ module OpenApplicationPlatform::Rails::ControllerExtensions
   end
   
   
-  # network_options, api_key, api_secret or app_name may be overridden in your controller
-  
-  def network_options
-    global_config[current_network_param.downcase][Rails.env]
-  end
+  # network_options, api_key, api_secret and app_name may be overridden in your controller
   
   def api_key
     network_options[:api_key]
@@ -129,10 +125,10 @@ private
   end
   
   def network_options
-    OPEN_APPLICATION_PLATFORM[current_network.to_s]
+    global_config[current_network.to_s.downcase][Rails.env]
   end
   
   def global_config
-    @config = YAML.load(File.read(RAILS_ROOT + '/config/platform.yml'))
+    @config ||= YAML.load(File.read(RAILS_ROOT + '/config/platform.yml'))
   end
 end
