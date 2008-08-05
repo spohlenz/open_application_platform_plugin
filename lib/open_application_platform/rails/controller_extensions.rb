@@ -125,7 +125,7 @@ private
   end
   
   def network_options
-    global_config[current_network.to_s.downcase][Rails.env]
+    HashWithIndifferentAccess.new(global_config[current_network.to_s.downcase][Rails.env])
   end
   
   def global_config
