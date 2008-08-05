@@ -125,10 +125,6 @@ private
   end
   
   def network_options
-    HashWithIndifferentAccess.new(global_config[current_network.to_s.downcase][Rails.env])
-  end
-  
-  def global_config
-    @config ||= YAML.load(File.read(RAILS_ROOT + '/config/platform.yml'))
+    OpenApplicationPlatform::Configuration.for(current_network, Rails.env)
   end
 end

@@ -1,6 +1,4 @@
 class OpenApplicationPlatform::Session
-  class UnactivatedSessionError < StandardError; end
-  
   attr_accessor :api_key, :api_secret, :network
   attr_accessor :session_key, :user_id
   
@@ -16,12 +14,12 @@ class OpenApplicationPlatform::Session
     @user_id = user_id ? user_id : api.user_id
   end
   
-  def ready?
-    @session_key
+  def api
+    @api ||= OpenApplicationPlatform::API.new(network, api_key, api_secret, session_key, user_id)
   end
   
-  def api
-    raise UnactivatedSessionError unless ready?
-    @api ||= OpenApplicationPlatform::API.new(network, api_key, api_secret, session_key, user_id)
+  def self.global(network=OpenApplicationPlatform::Network::Facebook)
+    config = OpenApplicationPlatform::Configuration.for(network, Rails.env)
+    new(config[:api_key], config[:api_secret], network)
   end
 end
